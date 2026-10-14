@@ -72,14 +72,14 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    const basePrice = lines.reduce((s, l) => s + l.price * l.quantity, 0)
-    const commission = 80
+    const basePrice =
+      Math.round(lines.reduce((s, l) => s + l.price * l.quantity, 0) * 100) / 100
+    const commission = 0
     const discount = 0
-    const priceIncrease = 80
+    const priceIncrease = 0
     const bonus = 0
     const shippingFee = 0
-    const total =
-      basePrice + commission - discount + priceIncrease - bonus + shippingFee
+    const total = basePrice + shippingFee
 
     const order: Order = {
       id: crypto.randomUUID(),
