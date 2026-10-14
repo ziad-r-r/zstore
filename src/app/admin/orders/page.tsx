@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { formatPrice, ORDER_STATUSES } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 
 interface Order {
   id: string
@@ -24,7 +24,10 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true)
 
   const load = async () => {
-    const token = sessionStorage.getItem('zstore_admin') || ''
+    const token =
+      typeof sessionStorage !== 'undefined'
+        ? sessionStorage.getItem('zstore_admin') || ''
+        : ''
     const res = await fetch('/api/orders', {
       headers: { 'x-admin-token': token },
     })
@@ -40,9 +43,18 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-coffee-dark mb-6">الطلبات</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-coffee-dark">الطلبات</h1>
+        <button
+          type="button"
+          onClick={() => load()}
+          className="text-sm bg-coffee text-white px-4 py-2 rounded-full"
+        >
+          تحديث الطلبات
+        </button>
+      </div>
       {orders.length === 0 ? (
-        <p className="text-muted">لا توجد طلبات بعد</p>
+        <p className="text-muted">لا توجد طلبات بعد — اضغط تحديث بعد ما العملاء يطلبوا</p>
       ) : (
         <div className="space-y-4">
           {orders.map((o) => (
@@ -53,15 +65,20 @@ export default function AdminOrdersPage() {
               </div>
               <p className="text-sm">{o.customerName} — {o.customerPhone}</p>
               <p className="text-sm text-muted">{o.city} / {o.area} — {o.address}</p>
-              {o.shippingNotes && <p className="text-sm text-muted mt-1">ملاحظات: {o.shippingNotes}</p>}
+              {o.shippingNotes ? (
+                <p className="text-sm text-muted mt-1">ملاحظات: {o.shippingNotes}</p>
+              ) : null}
               <ul className="text-sm mt-2 space-y-1">
-                {o.items?.map((it, i) => (
+                {(o.items || []).map((it, i) => (
                   <li key={i}>
-                    {it.name} × {it.quantity} — {formatPrice(it.price * it.quantity)}
+                    {it.name} × {it.quantity} —{' '}
+                    {formatPrice(it.price * it.quantity)}
                   </li>
                 ))}
               </ul>
-              <p className="font-bold text-coffee mt-2">الإجمالي: {formatPrice(o.total)}</p>
+              <p className="font-bold text-coffee mt-2">
+                الإجمالي: {formatPrice(o.total)}
+              </p>
             </div>
           ))}
         </div>
